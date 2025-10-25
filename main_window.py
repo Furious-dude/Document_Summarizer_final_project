@@ -27,7 +27,7 @@ class App(customtkinter.CTk):
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
         self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.addtext)
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
@@ -160,8 +160,21 @@ class App(customtkinter.CTk):
         print("sidebar_button click")
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
         print("Selected File:", file_path)
-        with open(filename, 'r') as f:
-            self.textbox.insert(INSERT, f.read())
+        with open(file_path, 'r') as f:
+            self.textbox.insert(END, f.read())
+    def addtext(self):
+        file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
+        print("Selected File:", file_path)
+        f = open(file_path)
+        # gets everything in your textbox
+        # with open(file_path, 'r') as f:
+        txt = f.read()
+            # self.textbox.insert(end, f.read())
+        self.textbox.insert( "0.0",txt)
+
+        # tosses txt into textarea on a new line after the end
+        # self.textarea.insert(END,"\n"+txt)
+        # self.textbox.delete(0,END) # deletes your textbox text
         
 
 if __name__ == "__main__":
