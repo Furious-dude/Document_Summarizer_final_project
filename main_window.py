@@ -20,7 +20,7 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0, 1, 2), weight=1)
 
         # main se gom 3 phan : 3 cot,2 hang. va co 2 che do(tam thoi)
-        # 
+        # asdassa
 
         # create sidebar frame with widgets
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
