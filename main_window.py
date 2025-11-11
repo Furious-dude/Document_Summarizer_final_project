@@ -1,6 +1,8 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
+# from summerizerfuction import load_llm
+from ctransformers import AutoModelForCausalLM
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -46,11 +48,12 @@ class App(customtkinter.CTk):
         self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
 
         # create main entry and button
-        self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry")
+        self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry") #keep
         self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
         self.main_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew") #this is the button next to the main entry box, keep it
+        #dung tam cai nay lam text box, de paste 1 cai text vao va bao summarize
 
         # create textbox
         self.textbox = customtkinter.CTkTextbox(self, width=250)
@@ -129,9 +132,7 @@ class App(customtkinter.CTk):
         self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
 
         # set default values
-        self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
-        self.sidebar_button_1.configure(text="Choose text file")
-        self.checkbox_3.configure(state="disabled")
+        
         self.checkbox_1.select()
         self.scrollable_frame_switches[0].select()
         self.scrollable_frame_switches[4].select()
@@ -147,6 +148,13 @@ class App(customtkinter.CTk):
         self.textbox.insert("0.0", "CTkTextbox\n\n" )
         self.seg_button_1.configure(values=["CTkSegmentedButton", "Value 2", "Value 3"])
         self.seg_button_1.set("Value 2")
+
+
+        # set actual default values and function calls by me
+        self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
+        self.sidebar_button_1.configure(text="Choose text file")
+        self.checkbox_3.configure(state="disabled")
+        self.main_button_1.configure(command=self.text_summerize, text="Summarize")
 
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
@@ -178,7 +186,13 @@ class App(customtkinter.CTk):
         # tosses txt into textarea on a new line after the end
         # self.textarea.insert(END,"\n"+txt)
         # self.textbox.delete(0,END) # deletes your textbox text
-        
+    def text_summerize(self):
+        txt = self.entry.get()
+        llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+    
+        print(llm("Summarize this text : " + txt))
+        return llm
+
 
 if __name__ == "__main__":
     app = App()

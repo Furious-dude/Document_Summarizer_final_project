@@ -25,7 +25,10 @@
 # from ctransformers import ctransformers
 from ctransformers import AutoModelForCausalLM
 
-def load_llm():
+# def load_llm():
+#     return
+
+def load_llm(string_a):
     # # New model details
     # MODEL_BIN_PATH = r'tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf'
     # MODEL_TYPE = 'llama'
@@ -38,11 +41,23 @@ def load_llm():
     #                             'temperature': TEMPERATURE,
     #                             'context_length': context_length}
     #                     )
-    llm = AutoModelForCausalLM.from_pretrained("tinyllama_model/tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-    print(llm("AI is going to"))
-    return llm
 
+    llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+    if string_a!=NULL:
+        print(llm("Summarize this text : " + text(string_a)))
+        return llm
 
+    elif string_a=="":
+        print("write something")
+        return llm
+
+    else:
+        return
+
+# def load_llm(string_a):
+#     llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+#     print(llm(text(string_a)))
+#     return llm
 
 # Call load_llm() to create an instance of the model
 llm_model = load_llm()
