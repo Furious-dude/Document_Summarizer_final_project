@@ -4,7 +4,9 @@ import customtkinter
 # from summerizerfuction import load_llm
 from ctransformers import AutoModelForCausalLM
 import pypdf
-customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+import threading
+import time
+customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 
@@ -12,8 +14,13 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
+        # init state values
+        self.is_loading_pdf = False
+        self.is_loading_model = False
+        self.is_summarizing = False
+
         # configure window
-        self.title("Document summerizer phase 1")
+        self.title("Document summerizer phase 2")
         self.geometry(f"{1100}x{580}")
 
         # configure grid layout (4x4)

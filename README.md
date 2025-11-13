@@ -4,4 +4,5 @@ do an cua em
 # Project goals
     - Giao dien
     - Module chung
-    - Test prototype
+    ~~ Test prototype~~
+    - Full app (offline)
