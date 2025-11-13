@@ -3,7 +3,7 @@ import tkinter.messagebox
 import customtkinter
 # from summerizerfuction import load_llm
 from ctransformers import AutoModelForCausalLM
-
+import pypdf
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -155,6 +155,7 @@ class App(customtkinter.CTk):
         self.sidebar_button_1.configure(text="Choose text file")
         self.checkbox_3.configure(state="disabled")
         self.main_button_1.configure(command=self.text_summerize, text="Summarize")
+        self.sidebar_button_2.configure(command=self.open_pdf,text="Open pdf file")
 
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
@@ -181,7 +182,7 @@ class App(customtkinter.CTk):
         # with open(file_path, 'r') as f:
         txt = f.read()
             # self.textbox.insert(end, f.read())
-        self.textbox.insert( "0.0",txt)
+        self.textbox.insert( "0.0",txt) # day la ket qua lan truoc lam
 
         # tosses txt into textarea on a new line after the end
         # self.textarea.insert(END,"\n"+txt)
@@ -192,6 +193,17 @@ class App(customtkinter.CTk):
     
         print(llm("Summarize this text : " + txt))
         return llm
+    def open_pdf(self):
+        file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("PDF File", ('*.pdf')), ("All files", "*.*")])
+        with open(file_path,'rb') as file:
+            reader = pypdf.PdfReader(file_path)
+            text = ''
+            for page in reader.pages:
+                text += page.extract_text()
+            self.textbox.insert("0.0",text)
+            # luồng function này cho thử pypdf có extract duoc text hay ko
+            # va co dua duoc text len len textbox hay khong
+            # ket qua: thanh cong, do lan truoc da lam duoc vi tri nay
 
 
 if __name__ == "__main__":
