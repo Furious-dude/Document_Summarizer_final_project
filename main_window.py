@@ -183,13 +183,18 @@ class App(customtkinter.CTk):
             self.textbox.insert(END, f.read())
     def addtext(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
-        print("Selected File:", file_path)
-        f = open(file_path)
-        # gets everything in your textbox
-        # with open(file_path, 'r') as f:
-        txt = f.read()
-            # self.textbox.insert(end, f.read())
-        self.textbox.insert( "0.0",txt) # day la ket qua lan truoc lam
+        if file_path:
+            try:
+                print("Selected File:", file_path)
+                f = open(file_path)
+                # gets everything in your textbox
+                # with open(file_path, 'r') as f:
+                txt = f.read()
+                    # self.textbox.insert(end, f.read())
+                self.textbox.insert( "0.0",txt) # day la ket qua lan truoc lam
+            except Exception as a:
+                messagebox.showerror("Error!",f"Failed to extract text from file :\n{e}")
+                # cac ket qua try-catch nay deu den tu mon c-sharp
 
         # tosses txt into textarea on a new line after the end
         # self.textarea.insert(END,"\n"+txt)
@@ -202,15 +207,20 @@ class App(customtkinter.CTk):
         return llm
     def open_pdf(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("PDF File", ('*.pdf')), ("All files", "*.*")])
-        with open(file_path,'rb') as file:
-            reader = pypdf.PdfReader(file_path)
-            text = ''
-            for page in reader.pages:
-                text += page.extract_text()
-            self.textbox.insert("0.0",text)
-            # luồng function này cho thử pypdf có extract duoc text hay ko
-            # va co dua duoc text len len textbox hay khong
-            # ket qua: thanh cong, do lan truoc da lam duoc vi tri nay
+        if file_path:
+            try:
+                with open(file_path,'rb') as file:
+                    reader = pypdf.PdfReader(file_path)
+                    text = ''
+                    for page in reader.pages:
+                        text += page.extract_text()
+                    self.textbox.insert("0.0",text)
+                # luồng function này cho thử pypdf có extract duoc text hay ko
+                # va co dua duoc text len len textbox hay khong
+                # ket qua: thanh cong, do lan truoc da lam duoc vi tri nay
+            except Exception as e:
+                messagebox.showerror("Error",f"\{e} :","upload a pdf first !")
+            # sua loi file chay luon khi chua co lenh chay, hoac khong co file
 
 
 if __name__ == "__main__":
