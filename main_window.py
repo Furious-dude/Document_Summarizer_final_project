@@ -9,7 +9,7 @@ import time
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
-
+global summary_cache
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -200,10 +200,26 @@ class App(customtkinter.CTk):
         # self.textarea.insert(END,"\n"+txt)
         # self.textbox.delete(0,END) # deletes your textbox text
     def text_summerize(self):
-        txt = self.entry.get()
-        llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+        try:
+
+            txt = self.textbox.get("0.0",customtkinter.END)
+            self.main_button_1.configure(state="disabled")
+            global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
+            if summary_cache:
+                txt = summary_cache # lay text tu ben da lay sang cache, global  
+            else:
+                llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+                txt_summarized = llm("summarize this as short as you can: "+ summary_cache)# dang lam, buon ngu qua
+                self.textbox.insert("0.0",txt_summarized) # hien thi ket qua xuong duoi txtbox nho
+            threading.Thread(target=text_summerize).start()
+        except Exception as e:
+            tkinter.messagebox.showerror("Error",f"{e}")
+        finally:
+            self.main_button_1.configure(state="enabled")
+            #cai nay se khong lam duoc, de thu xem cach khac nhu nao, vi cai nayf se khien 
+            # txt ket lai o vi tri processing, nhung co the minh se cho thread vao day luon
     
-        print(llm("Summarize this text : " + txt))
+        # print(llm("Summarize this text : " + txt)) # khong can nua, day la de test
         return llm
     def open_pdf(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("PDF File", ('*.pdf')), ("All files", "*.*")])
@@ -219,7 +235,7 @@ class App(customtkinter.CTk):
                 # va co dua duoc text len len textbox hay khong
                 # ket qua: thanh cong, do lan truoc da lam duoc vi tri nay
             except Exception as e:
-                messagebox.showerror("Error",f"\{e} :","upload a pdf first !")
+                tkinter.messagebox.showerror("Error",f"\{e} :","upload a pdf first !")
             # sua loi file chay luon khi chua co lenh chay, hoac khong co file
 
 
