@@ -211,7 +211,7 @@ class App(customtkinter.CTk):
                 llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
                 txt_summarized = llm("summarize this as short as you can: "+ summary_cache)# dang lam, buon ngu qua
                 self.textbox.insert("0.0",txt_summarized) # hien thi ket qua xuong duoi txtbox nho
-            threading.Thread(target=text_summerize).start()
+            # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
         except Exception as e:
             tkinter.messagebox.showerror("Error",f"{e}")
         finally:
@@ -239,6 +239,9 @@ class App(customtkinter.CTk):
             # sua loi file chay luon khi chua co lenh chay, hoac khong co file
 
 
+
 if __name__ == "__main__":
     app = App()
+    t = threading.Thread(target=app.text_summerize)
+    t.start()
     app.mainloop()
