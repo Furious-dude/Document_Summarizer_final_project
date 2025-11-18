@@ -6,10 +6,12 @@ from ctransformers import AutoModelForCausalLM
 import pypdf
 import threading
 import time
+from PIL import ImageTk
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
-global summary_cache
+
+# global summary_cache
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -29,7 +31,6 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0, 1, 2), weight=1)
 
         # main se gom 3 phan : 3 cot,2 hang. va co 2 che do(tam thoi)
-        # asdassa
 
         # create sidebar frame with widgets
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
@@ -204,13 +205,13 @@ class App(customtkinter.CTk):
 
             txt = self.textbox.get("0.0",customtkinter.END)
             self.main_button_1.configure(state="disabled")
-            global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
-            if summary_cache:
-                txt = summary_cache # lay text tu ben da lay sang cache, global  
-            else:
-                llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-                txt_summarized = llm("summarize this as short as you can: "+ summary_cache)# dang lam, buon ngu qua
-                self.textbox.insert("0.0",txt_summarized) # hien thi ket qua xuong duoi txtbox nho
+            # global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
+            # if summary_cache:
+            #     txt = summary_cache # lay text tu ben da lay sang cache, global  
+            # else:
+            llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+            txt_summarized = llm("summarize this as short as you can: "+ txt)# dang lam, buon ngu qua
+            self.textbox.insert("0.0",txt_summarized) # hien thi ket qua xuong duoi txtbox nho
             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
         except Exception as e:
             tkinter.messagebox.showerror("Error",f"{e}")
@@ -242,6 +243,10 @@ class App(customtkinter.CTk):
 
 if __name__ == "__main__":
     app = App()
-    t = threading.Thread(target=app.text_summerize)
-    t.start()
+    # iconpath = ImageTk.PhotoImage(file="assets\Document_summarizer_app_icon_test.png")
+    # app.wm_iconbitmap("") # working to make the icon workable
+    # app.iconphoto(False,iconpath)
+
+    # t = threading.Thread(target=app.text_summerize)
+    # t.start()
     app.mainloop()
