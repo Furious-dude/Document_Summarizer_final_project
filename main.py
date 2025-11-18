@@ -182,6 +182,7 @@ class App(customtkinter.CTk):
         print("Selected File:", file_path)
         with open(file_path, 'r') as f:
             self.textbox.insert(END, f.read())
+
     def addtext(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
         if file_path:
