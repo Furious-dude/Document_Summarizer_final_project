@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
-# from summerizerfuction import load_llm
+from summerizerfuction import load_llm
 from ctransformers import AutoModelForCausalLM
 import pypdf
 import threading
@@ -46,6 +46,8 @@ class App(customtkinter.CTk):
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        self.language_mode_option_menu = customtkinter.CTkOptionMenu(self.sidebar_frame,values=["English","Tiếng Việt"])
+        self.language_mode_option_menu.grid(row=4,column=0,padx=20,pady=(10,10))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)
         self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))

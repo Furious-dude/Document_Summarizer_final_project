@@ -26,9 +26,8 @@
 from ctransformers import AutoModelForCausalLM
 
 # def load_llm():
-#     return
-def load_llm():
-    pass
+#     pass
+
 
 def load_llm(string_a):
     # # New model details
@@ -82,14 +81,13 @@ def load_llm(string_a):
 #     return llm
 
 # Call load_llm() to create an instance of the model
-llm_model = load_llm()
+# llm_model = load_llm()
 
 # Test if the model was loaded successfully
-if llm_model is not None:
-    print("Model loaded successfully.")
-else:
-    print("Failed to load the model.")
-
+# if llm_model is not None:
+#     print("Model loaded successfully.")
+# else:
+#     print("Failed to load the model.")
 
 #test to see neu em load duoc model len khong
 
