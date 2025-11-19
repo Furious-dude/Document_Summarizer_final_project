@@ -6,6 +6,7 @@ from ctransformers import AutoModelForCausalLM
 import pypdf
 import threading
 import time
+from text_chunker import split_into_paragraphs
 from PIL import ImageTk
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -38,18 +39,20 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.addtext)
-        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
+        self.txt_file_button = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
+        self.txt_file_button.grid(row=1, column=0, padx=20, pady=10)
+        self.pdf_file_button = customtkinter.CTkButton(self.sidebar_frame, command=self.addtext)
+        self.pdf_file_button.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
         self.language_mode_option_menu = customtkinter.CTkOptionMenu(self.sidebar_frame,values=["English","Tiếng Việt"])
         self.language_mode_option_menu.grid(row=4,column=0,padx=20,pady=(10,10))
+        
+        # set  appearance menu
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
-                                                                       command=self.change_appearance_mode_event)
+                                                                       command=self.change_appearance_mode_event)        
         self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
         self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
         self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
@@ -61,65 +64,26 @@ class App(customtkinter.CTk):
         self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry") #keep
         self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.main_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew") #this is the button next to the main entry box, keep it
-        #dung tam cai nay lam text box, de paste 1 cai text vao va bao summarize
+        self.summarize_button = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+        self.summarize_button.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew") 
+        
+        #this is the button next to the main entry box
+        
 
-        # create textbox
-        self.textbox = customtkinter.CTkTextbox(self, width=250)
-        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        # textbox main section
+        self.textbox_raw = customtkinter.CTkTextbox(self, width=250)
+        self.textbox_raw.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.textbox_raw.configure(border_width=2,corner_radius=8,fg_color='transparent',border_color="grey")
 
-        # create tabview
-        self.tabview = customtkinter.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.tabview.add("CTkTabview")
-        self.tabview.add("Tab 2")
-        self.tabview.add("Tab 3")
-        self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
-        self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
 
-        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False,
-                                                        values=["Value 1", "Value 2", "Value Long Long Long"])
-        self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"),
-                                                    values=["Value 1", "Value 2", "Value Long....."])
-        self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog",
-                                                           command=self.open_input_dialog_event)
-        self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
-        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
-        self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
-
-        # create radiobutton frame
-        self.radiobutton_frame = customtkinter.CTkFrame(self)
-        self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        self.radio_var = tkinter.IntVar(value=0)
-        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CTkRadioButton Group:")
-        self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
-        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0)
-        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1)
-        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=2)
-        self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
-
-        # create slider and progressbar frame
-        self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
-        self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
-        self.seg_button_1 = customtkinter.CTkSegmentedButton(self.slider_progressbar_frame)
-        self.seg_button_1.grid(row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
-        self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
-        self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.slider_1 = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=4)
-        self.slider_1.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical")
-        self.slider_2.grid(row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns")
-        self.progressbar_3 = customtkinter.CTkProgressBar(self.slider_progressbar_frame, orientation="vertical")
-        self.progressbar_3.grid(row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns")
+        # tabview related
+        # self.tabview = customtkinter.CTkTabview(self, width=250)
+        # self.tabview.grid(row=0, column=2, columnspan=2,padx=(20, 0), pady=(20, 0), sticky="nsew")
+        
+        self.textbox_summarized = customtkinter.CTkTextbox(self,width=250)
+        self.textbox_summarized.grid(row=0,column=2, columnspan=2,padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.textbox_summarized.configure(border_width=2,corner_radius=8,fg_color='transparent',border_color="grey")
+        
 
         # create scrollable frame
         self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="CTkScrollableFrame")
@@ -131,7 +95,28 @@ class App(customtkinter.CTk):
             switch.grid(row=i, column=0, padx=10, pady=(0, 20))
             self.scrollable_frame_switches.append(switch)
 
-        # create checkbox and switch frame
+        # create slider and progressbar frame for decor
+        self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
+        self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
+        self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
+        self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
+        self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.slider_1 = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=4)
+        self.slider_1.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical")
+        self.slider_2.grid(row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns")
+        self.progressbar_3 = customtkinter.CTkProgressBar(self.slider_progressbar_frame, orientation="vertical")
+        self.progressbar_3.grid(row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns")
+
+        self.slider_1.configure(command=self.progressbar_2.set)
+        self.slider_2.configure(command=self.progressbar_3.set)
+        self.progressbar_1.configure(mode="indeterminnate")
+        self.progressbar_1.start()
+
+        # create checkboxes
         self.checkbox_slider_frame = customtkinter.CTkFrame(self)
         self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
@@ -141,31 +126,24 @@ class App(customtkinter.CTk):
         self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
         self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
 
-        # set default values
-        
+        # set default values        
         self.checkbox_1.select()
         self.scrollable_frame_switches[0].select()
         self.scrollable_frame_switches[4].select()
-        self.radio_button_3.configure(state="disabled")
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
-        self.optionmenu_1.set("CTkOptionmenu")
-        self.combobox_1.set("CTkComboBox")
-        self.slider_1.configure(command=self.progressbar_2.set)
-        self.slider_2.configure(command=self.progressbar_3.set)
-        self.progressbar_1.configure(mode="indeterminnate")
-        self.progressbar_1.start()
-        self.textbox.insert("0.0", "CTkTextbox\n\n" )
-        self.seg_button_1.configure(values=["CTkSegmentedButton", "Value 2", "Value 3"])
-        self.seg_button_1.set("Value 2")
+
+        # them phan code de label 2 cai textbox. ko dung dc placeholder
+        # tao lai cai textbox dung voi cai ban dau, dat lai ten cac thanh phan dang su dung, va tao ra 1 theme moi trong nay
+        # sap xep lai vi tri initiate cac cot, va cac thanh phan lien quan den cot do
 
 
         # set actual default values and function calls by me
-        self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
-        self.sidebar_button_1.configure(text="Choose text file")
+        self.sidebar_button_3.configure(text="Chunk text into paragraph",command=self.get_paragraph)
+        self.txt_file_button.configure(text="Choose text file")
         self.checkbox_3.configure(state="disabled")
-        self.main_button_1.configure(command=self.text_summerize, text="Summarize")
-        self.sidebar_button_2.configure(command=self.open_pdf,text="Open pdf file")
+        self.summarize_button.configure(command=self.text_summerize, text="Summarize")
+        self.pdf_file_button.configure(command=self.open_pdf,text="Open pdf file")
 
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
@@ -183,7 +161,7 @@ class App(customtkinter.CTk):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
         print("Selected File:", file_path)
         with open(file_path, 'r') as f:
-            self.textbox.insert(END, f.read())
+            self.textbox_raw.insert(END, f.read())
 
     def addtext(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
@@ -195,7 +173,7 @@ class App(customtkinter.CTk):
                 # with open(file_path, 'r') as f:
                 txt = f.read()
                     # self.textbox.insert(end, f.read())
-                self.textbox.insert( "0.0",txt) # day la ket qua lan truoc lam
+                self.textbox_raw.insert( "0.0",txt) # day la ket qua lan truoc lam
             except Exception as a:
                 messagebox.showerror("Error!",f"Failed to extract text from file :\n{e}")
                 # cac ket qua try-catch nay deu den tu mon c-sharp
@@ -206,20 +184,21 @@ class App(customtkinter.CTk):
     def text_summerize(self):
         try:
 
-            txt = self.textbox.get("0.0",customtkinter.END)
-            self.main_button_1.configure(state="disabled")
+            txt = self.textbox_raw.get("0.0",customtkinter.END)
+            txt_chunks = split_into_sentences(self.textbox_raw.get("0.0",customtkinter.END))
+            self.summarize_button.configure(state="disabled")
             # global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
             # if summary_cache:
             #     txt = summary_cache # lay text tu ben da lay sang cache, global  
             # else:
             llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
             txt_summarized = llm("summarize this as short as you can: "+ txt)# dang lam, buon ngu qua
-            self.textbox.insert("0.0",txt_summarized) # hien thi ket qua xuong duoi txtbox nho
+            self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua xuong duoi txtbox nho
             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
         except Exception as e:
             tkinter.messagebox.showerror("Error",f"{e}")
         finally:
-            self.main_button_1.configure(state="enabled")
+            self.summarize_button.configure(state="enabled")
             #cai nay se khong lam duoc, de thu xem cach khac nhu nao, vi cai nayf se khien 
             # txt ket lai o vi tri processing, nhung co the minh se cho thread vao day luon
     
@@ -234,7 +213,7 @@ class App(customtkinter.CTk):
                     text = ''
                     for page in reader.pages:
                         text += page.extract_text()
-                    self.textbox.insert("0.0",text)
+                    self.textbox_raw.insert("0.0",text)
                 # luồng function này cho thử pypdf có extract duoc text hay ko
                 # va co dua duoc text len len textbox hay khong
                 # ket qua: thanh cong, do lan truoc da lam duoc vi tri nay
@@ -242,7 +221,9 @@ class App(customtkinter.CTk):
                 tkinter.messagebox.showerror("Error",f"\{e} :","upload a pdf first !")
             # sua loi file chay luon khi chua co lenh chay, hoac khong co file
 
-
+    def get_paragraph(self):
+        text = self.textbox_raw.get("0.0",customtkinter.END)
+        self.textbox_summarized.insert("0.0",split_into_paragraphs(text))
 
 if __name__ == "__main__":
     app = App()
@@ -253,3 +234,61 @@ if __name__ == "__main__":
     # t = threading.Thread(target=app.text_summerize)
     # t.start()
     app.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+# unused codes
+
+        
+        # self.seg_button_1 = customtkinter.CTkSegmentedButton(self.slider_progressbar_frame)
+        # self.seg_button_1.grid(row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+
+        # self.textbox.insert("0.0", "CTkTextbox\n\n" )
+        
+        
+        # self.seg_button_1.configure(values=["CTkSegmentedButton", "Value 2", "Value 3"])
+        # self.seg_button_1.set("Value 2")
+        # self.tabview.add("CTkTabview")
+        # self.tabview.add("Tab 2")
+        # self.tabview.add("Tab 3")
+        # self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
+        # self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
+
+        # self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False,
+        #                                                 values=["Value 1", "Value 2", "Value Long Long Long"])
+        # self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
+        # self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"),
+        #                                             values=["Value 1", "Value 2", "Value Long....."])
+        # self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
+        # self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog",
+        #                                                    command=self.open_input_dialog_event)
+        # self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
+        # self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
+        # self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
+
+        # create radiobutton frame
+        # self.radiobutton_frame = customtkinter.CTkFrame(self)
+        # self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        # self.radio_var = tkinter.IntVar(value=0)
+        # self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CTkRadioButton Group:")
+        # self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
+        # self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0)
+        # self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
+        # self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1)
+        # self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
+        # self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=2)
+        # self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
+
+
+
+        # self.radio_button_3.configure(state="disabled")
+        # self.optionmenu_1.set("CTkOptionmenu")
+        # self.combobox_1.set("CTkComboBox")
