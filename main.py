@@ -7,6 +7,7 @@ import pypdf
 import threading
 import time
 from text_chunker import split_into_paragraphs
+from summary_shortening_module import sumy_summarizer
 from PIL import ImageTk
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -68,13 +69,13 @@ class App(customtkinter.CTk):
         self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.summarize_button = customtkinter.CTkButton(master=self.checkbox_slider_frame, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.summarize_button.grid(row=0, column=0, padx=(20, 20), pady=(20, 20), sticky="nsew") 
+        self.shorten_button = customtkinter.CTkButton(master=self.checkbox_slider_frame, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+        self.shorten_button.grid(row=1, column=0, padx=(20, 20), pady=(20, 20), sticky="nsew")         
         self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
+        self.checkbox_1.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
         self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
-        
-        #this is the button next to the main entry box
-        
+        self.checkbox_2.grid(row=3, column=0, pady=(20, 0), padx=20, sticky="n")
+                
 
     # textbox main section # indent de tao chapter, rut gon code
         self.textbox_raw_bounding_box = customtkinter.CTkFrame(self,width=250)
@@ -82,8 +83,6 @@ class App(customtkinter.CTk):
         self.textbox_raw = customtkinter.CTkTextbox(self, width=250)
         self.textbox_raw.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.textbox_raw.configure(border_width=2,corner_radius=8,fg_color='transparent',border_color="grey",scrollbar_button_hover_color="green")
-        self.entry_label = customtkinter.CTkLabel(self,text="Raw text")
-        self.entry_label.grid(row=2, column=1, padx=20, pady=(20, 10))
 
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=customtkinter.CTkFont(size=20, weight="bold"))
         # tabview related
@@ -111,18 +110,23 @@ class App(customtkinter.CTk):
         self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
         self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
+        self.entry_label = customtkinter.CTkLabel(self.slider_progressbar_frame,text="Raw text")
+        self.entry_label.grid(row=0, column=0, padx=20, pady=(20, 10))
         self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
         self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
         self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
         self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.slider_1 = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=4)
-        self.slider_1.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.final_summed_lines = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=10, number_of_steps=10)
+        self.final_summed_lines.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.final_text_line_label = customtkinter.CTkLabel(self.slider_progressbar_frame,text="final_text_line")
+        self.final_text_line_label.grid(row=4,column=0)
+
         self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical")
         self.slider_2.grid(row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns")
         self.progressbar_3 = customtkinter.CTkProgressBar(self.slider_progressbar_frame, orientation="vertical")
         self.progressbar_3.grid(row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns")
 
-        self.slider_1.configure(command=self.progressbar_2.set)
+        self.final_summed_lines.configure(command=self.progressbar_2.set)
         self.slider_2.configure(command=self.progressbar_3.set)
         self.progressbar_1.configure(mode="indeterminnate")
         self.progressbar_1.start()
@@ -131,8 +135,6 @@ class App(customtkinter.CTk):
 
     # set default values        
         
-        self.appearance_mode_optionemenu.set("Dark")
-        self.scaling_optionemenu.set("100%")
 
         # them phan code de label 2 cai textbox. ko dung dc placeholder
         # tao lai cai textbox dung voi cai ban dau, dat lai ten cac thanh phan dang su dung, va tao ra 1 theme moi trong nay
@@ -140,11 +142,14 @@ class App(customtkinter.CTk):
 
 
     # set actual default values and function calls by me
+        self.appearance_mode_optionemenu.set("Dark")
+        self.scaling_optionemenu.set("100%")
         self.sidebar_button_3.configure(text="Chunk text into paragraph",command=self.get_paragraph)
-        self.txt_file_button.configure(text="Choose text file")
         self.summarize_button.configure(command=self.text_summerize, text="Summarize")
         self.pdf_file_button.configure(command=self.open_pdf,text="Open pdf file")
-
+        self.txt_file_button.configure(text="Choose text file")
+        self.shorten_button.configure(text="Summarize style 2",command=self.summarize_style_2)
+# the functions
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
         print("CTkInputDialog:", dialog.get_input())
@@ -181,6 +186,8 @@ class App(customtkinter.CTk):
         # tosses txt into textarea on a new line after the end
         # self.textarea.insert(END,"\n"+txt)
         # self.textbox.delete(0,END) # deletes your textbox text
+
+        
     def text_summerize(self):
         try:
 
@@ -224,6 +231,12 @@ class App(customtkinter.CTk):
     def get_paragraph(self):
         text = self.textbox_raw.get("0.0",customtkinter.END)
         self.textbox_summarized.insert("0.0",split_into_paragraphs(text))
+
+    def summarize_style_2(self):
+        raw_text = self.textbox_raw.get("0.0",customtkinter.END)
+        summarized_text = sumy_summarizer(raw_text,self.final_summed_lines.get())
+        self.textbox_raw.delete("0.0",customtkinter.END)
+        self.textbox_summarized.insert("0.0",summarized_text)
 
 if __name__ == "__main__":
     app = App()
