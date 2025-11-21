@@ -8,7 +8,7 @@ def sumy_summarizer(text_raw:str,number_of_line:int) -> str:
     lex_summarizer = LexRankSummarizer()
     summary = lex_summarizer(parser.document,number_of_line)
     summary_list = [str(sentence) for sentence in summary]
-    result = ' '.join(summary_list)
+    result = '\n'.join(summary_list)
     return result
 
 if __name__ == "__main__":

@@ -9,6 +9,8 @@ import time
 from text_chunker import split_into_paragraphs
 from summary_shortening_module import sumy_summarizer
 from PIL import ImageTk
+
+#set defaults
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -45,21 +47,26 @@ class App(customtkinter.CTk):
         self.pdf_file_button.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
-        
+
     # customization menus
-        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        # language
         self.language_mode_option_menu = customtkinter.CTkOptionMenu(self.sidebar_frame,values=["English","Tiếng Việt"])
-        self.language_mode_option_menu.grid(row=4,column=0,padx=20,pady=(10,10))
-                
+        self.language_mode_option_menu.grid(row=4,column=0,padx=20,pady=(10,0))
+        self.language_change_submit_button = customtkinter.CTkButton(self.sidebar_frame,text="Change language")
+        self.language_change_submit_button.grid(row=5, column=0, padx=20, pady=(10,0))
+
+        # appearance mode        
+        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
+        self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark" ,"System"],
                                                                        command=self.change_appearance_mode_event)        
-        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
+        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(10, 10))
+        # scaling menu
         self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+        self.scaling_label.grid(row=8, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                                command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+        self.scaling_optionemenu.grid(row=9, column=0, padx=20, pady=(10, 20))
 
         
 
@@ -149,6 +156,8 @@ class App(customtkinter.CTk):
         self.pdf_file_button.configure(command=self.open_pdf,text="Open pdf file")
         self.txt_file_button.configure(text="Choose text file")
         self.shorten_button.configure(text="Summarize style 2",command=self.summarize_style_2)
+        self.language_change_submit_button.configure(command=self.gui_language_setting)
+
 # the functions
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
@@ -237,6 +246,17 @@ class App(customtkinter.CTk):
         summarized_text = sumy_summarizer(raw_text,self.final_summed_lines.get())
         self.textbox_raw.delete("0.0",customtkinter.END)
         self.textbox_summarized.insert("0.0",summarized_text)
+    
+    # change the GUI langue, from eng to vie
+    def gui_language_setting(self):
+        state = self.language_mode_option_menu.get()
+        if state == "English":
+            print("got english")
+        elif state == "Tiếng Việt":
+            print(" got Tiếng Việt")
+        else:
+            print("loi")
+
 
 if __name__ == "__main__":
     app = App()
