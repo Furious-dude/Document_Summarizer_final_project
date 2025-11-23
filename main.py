@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
-from summerizerfuction import load_llm
+# from summerizerfuction import load_llm
 from ctransformers import AutoModelForCausalLM
 import pypdf
 import threading
@@ -91,7 +91,7 @@ class App(customtkinter.CTk):
         self.textbox_raw.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.textbox_raw.configure(border_width=2,corner_radius=8,fg_color='transparent',border_color="grey",scrollbar_button_hover_color="green")
 
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Document Summarizer 1.0", font=customtkinter.CTkFont(size=20, weight="bold"))
         # tabview related
         # self.tabview = customtkinter.CTkTabview(self, width=250)
         # self.tabview.grid(row=0, column=2, columnspan=2,padx=(20, 0), pady=(20, 0), sticky="nsew")
@@ -123,7 +123,7 @@ class App(customtkinter.CTk):
         self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
         self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
         self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.final_summed_lines = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=10, number_of_steps=10)
+        self.final_summed_lines = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=10)
         self.final_summed_lines.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
         self.final_text_line_label = customtkinter.CTkLabel(self.slider_progressbar_frame,text="final_text_line")
         self.final_text_line_label.grid(row=4,column=0)
@@ -157,6 +157,7 @@ class App(customtkinter.CTk):
         self.txt_file_button.configure(text="Choose text file")
         self.shorten_button.configure(text="Summarize style 2",command=self.summarize_style_2)
         self.language_change_submit_button.configure(command=self.gui_language_setting)
+        # self.language_mode_option_menu.columnconfigure(command=self.gui_language_setting)
 
 # the functions
     def open_input_dialog_event(self):
@@ -249,13 +250,38 @@ class App(customtkinter.CTk):
     
     # change the GUI langue, from eng to vie
     def gui_language_setting(self):
+        print(self.language_mode_option_menu.get())
         state = self.language_mode_option_menu.get()
         if state == "English":
             print("got english")
+            self.language_change_submit_button.configure(text="Change language")
+            self.appearance_mode_label.configure(text="Appearance Mode:")
+            self.scaling_label.configure(text="UI Scaling:")
+            self.entry_label.configure(text="Raw text")
+            self.final_text_line_label.configure(text="Choose number of lines")
+
+            self.sidebar_button_3.configure(text="Chunk text into paragraph")
+            self.summarize_button.configure(text="Summarize")
+            self.pdf_file_button.configure(text="Open pdf file")
+            self.txt_file_button.configure(text="Choose text file")
+            self.shorten_button.configure(text="Summarize style 2")
         elif state == "Tiếng Việt":
             print(" got Tiếng Việt")
+            self.language_change_submit_button.configure(text="Ngôn ngữ")
+            self.appearance_mode_label.configure(text="Chế độ hiển thị:")
+            self.scaling_label.configure(text="Độ thu phóng:")
+            self.entry_label.configure(text="Văn bản gốc")
+            self.final_text_line_label.configure(text="Số dòng đầu ra")
+
+            self.sidebar_button_3.configure(text="Cắt dòng")
+            self.summarize_button.configure(text="Tóm tắt văn bản")
+            self.pdf_file_button.configure(text="Mở file PDF")
+            self.txt_file_button.configure(text="Mở file Text")
+            self.shorten_button.configure(text="Tóm tắt cách 2")
         else:
             print("loi")
+
+
 
 
 if __name__ == "__main__":

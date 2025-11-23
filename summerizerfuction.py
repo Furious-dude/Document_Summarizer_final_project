@@ -1,54 +1,54 @@
 from ctransformers import AutoModelForCausalLM
-# testing for the lát main function iteration
-import spacy
-from spacy.lang.en import English
+# testing for the last main function iteration
+# import spacy
+# from spacy.lang.en import English
 
-nlp = spacy.load("en_core_web_sm")
+# nlp = spacy.load("en_core_web_sm")
 
 
 
-def text_to_chunks(text):
-  chunks = [[]]
-  chunk_total_words = 0
+# def text_to_chunks(text):
+#   chunks = [[]]
+#   chunk_total_words = 0
 
-  sentences = nlp(text)
+#   sentences = nlp(text)
 
-  for sentence in sentences.sents:
-    chunk_total_words += len(sentence.text.split(" "))
+#   for sentence in sentences.sents:
+#     chunk_total_words += len(sentence.text.split(" "))
 
-    if chunk_total_words > 2700:
-      chunks.append([])
-      chunk_total_words = len(sentence.text.split(" "))
+#     if chunk_total_words > 2700:
+#       chunks.append([])
+#       chunk_total_words = len(sentence.text.split(" "))
 
-    chunks[len(chunks)-1].append(sentence.text)
+#     chunks[len(chunks)-1].append(sentence.text)
   
-  return chunks
+#   return chunks
 
-def summarize_text(text):
-  prompt = f"Summarize the following text in 5 sentences:\n{text}"
+# def summarize_text(text):
+#   prompt = f"Summarize the following text in 5 sentences:\n{text}"
 
-  response = openai.Completion.create(
-      engine="text-davinci-003", 
-      prompt=prompt,
-      temperature=0.3, 
-      max_tokens=150, # = 112 words
-      top_p=1, 
-      frequency_penalty=0,
-      presence_penalty=1
-  )
+#   response = openai.Completion.create(
+#       engine="text-davinci-003", 
+#       prompt=prompt,
+#       temperature=0.3, 
+#       max_tokens=150, # = 112 words
+#       top_p=1, 
+#       frequency_penalty=0,
+#       presence_penalty=1
+#   )
 
-  return response["choices"][0]["text"]
+#   return response["choices"][0]["text"]
 
 
-  chunks = text_to_chunks(one_large_text)
+#   chunks = text_to_chunks(one_large_text)
 
-chunk_summaries = []
+# chunk_summaries = []
 
-for chunk in chunks:
-  chunk_summary = summarize_text(" ".join(chunk))
-  chunk_summaries.append(chunk_summary)
+# for chunk in chunks:
+#   chunk_summary = summarize_text(" ".join(chunk))
+#   chunk_summaries.append(chunk_summary)
 
-summary = " ".join(chunk_summaries)
+# summary = " ".join(chunk_summaries)
 # old code
 # def load_llm(string_a):
 #     # # New model details
