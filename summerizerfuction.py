@@ -1,116 +1,57 @@
 from ctransformers import AutoModelForCausalLM
-# testing for the last main function iteration
-# import spacy
-# from spacy.lang.en import English
 
-# nlp = spacy.load("en_core_web_sm")
+# error : chunked text still larger than the 512 limit of tokens
 
+def split_into_paragraphs(text : str) -> list[str]: # paragraph chunker module
+    paragraph = text.split("\n")
 
-
-# def text_to_chunks(text):
-#   chunks = [[]]
-#   chunk_total_words = 0
-
-#   sentences = nlp(text)
-
-#   for sentence in sentences.sents:
-#     chunk_total_words += len(sentence.text.split(" "))
-
-#     if chunk_total_words > 2700:
-#       chunks.append([])
-#       chunk_total_words = len(sentence.text.split(" "))
-
-#     chunks[len(chunks)-1].append(sentence.text)
-  
-#   return chunks
-
-# def summarize_text(text):
-#   prompt = f"Summarize the following text in 5 sentences:\n{text}"
-
-#   response = openai.Completion.create(
-#       engine="text-davinci-003", 
-#       prompt=prompt,
-#       temperature=0.3, 
-#       max_tokens=150, # = 112 words
-#       top_p=1, 
-#       frequency_penalty=0,
-#       presence_penalty=1
-#   )
-
-#   return response["choices"][0]["text"]
-
-
-#   chunks = text_to_chunks(one_large_text)
-
-# chunk_summaries = []
-
-# for chunk in chunks:
-#   chunk_summary = summarize_text(" ".join(chunk))
-#   chunk_summaries.append(chunk_summary)
-
-# summary = " ".join(chunk_summaries)
-# old code
-# def load_llm(string_a):
-#     # # New model details
-#     # MODEL_BIN_PATH = r'tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf'
-#     # MODEL_TYPE = 'llama'
-#     # MAX_NEW_TOKENS = 3000
-#     # TEMPERATURE = 0.01
-#     # context_length = 3000
-#     # llm = CTransformers(model=MODEL_BIN_PATH,
-#     #                     model_type=MODEL_TYPE,
-#     #                     config={'max_new_tokens': MAX_NEW_TOKENS,
-#     #                             'temperature': TEMPERATURE,
-#     #                             'context_length': context_length}
-#     #                     )
-#     try:
-
-#             txt = self.textbox.get("0.0",customtkinter.END)
-#             self.main_button_1.configure(state="disabled")
-#             # global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
-#             # if summary_cache:
-#             #     txt = summary_cache # lay text tu ben da lay sang cache, global  
-#             # else:
-#             llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-#             txt_summarized = llm("summarize this as short as you can: "+ txt)# dang lam, buon ngu qua
-#             self.textbox.insert("0.0",txt_summarized) # hien thi ket qua xuong duoi txtbox nho
-#             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
-#     except Exception as e:
-#             tkinter.messagebox.showerror("Error",f"{e}")
-#     finally:
-#             self.main_button_1.configure(state="enabled")
-#             #cai nay se khong lam duoc, de thu xem cach khac nhu nao, vi cai nayf se khien 
-#             # txt ket lai o vi tri processing, nhung co the minh se cho thread vao day luon
+    # convert large text to paragraph
     
-#         # print(llm("Summarize this text : " + txt)) # khong can nua, day la de test
-#     return llm
-#     llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-#     if string_a!=NULL:
-#         print(llm("Summarize this text : " + text(string_a)))
-#         return llm
+    chunks = [[]]
+    chunk_total_words = 0
 
-#     elif string_a=="":
-#         print("write something")
-#         return llm
+    for words in paragraph: # check if words in a paragraph is inside the limit
+        chunk_total_words += len(words.split(" "))
+        if chunk_total_words >= 2700: 
+            chunks.append([])
+            chunk_total_words = len(words.split(" "))
+        chunks[len(chunks)-1].append(words)
+    return chunks # output as chunks[], i think
 
-#     else:
-#         return
 
-# def load_llm(string_a):
-#     llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-#     print(llm(text(string_a)))
-#     return llm
+one_large_text = r'''Multi-document extractive summarization faces a problem of redundancy. Ideally, we want to extract sentences that are both "central" (i.e., contain the main ideas) and "diverse" (i.e., they differ from one another). For example, in a set of news articles about some event, each article is likely to have many similar sentences. To address this issue, LexRank applies a heuristic post-processing step that adds sentences in rank order, but discards sentences that are too similar to ones already in the summary. This method is called Cross-Sentence Information Subsumption (CSIS). These methods work based on the idea that sentences "recommend" other similar sentences to the reader. Thus, if one sentence is very similar to many others, it will likely be a sentence of great importance. Its importance also stems from the importance of the sentences "recommending" it. Thus, to get ranked highly and placed in a summary, a sentence must be similar to many sentences that are in turn also similar to many other sentences. This makes intuitive sense and allows the algorithms to be applied to an arbitrary new text. The methods are domain-independent and easily portable. One could imagine the features indicating important sentences in the news domain might vary considerably from the biomedical domain. However, the unsupervised "recommendation"-based approach applies to any domain.
+A related method is Maximal Marginal Relevance (MMR),[21] which uses a general-purpose graph-based ranking algorithm like Page/Lex/TextRank that handles both "centrality" and "diversity" in a unified mathematical framework based on absorbing Markov chain random walks (a random walk where certain states end the walk). The algorithm is called GRASSHOPPER.[22] In addition to explicitly promoting diversity during the ranking process, GRASSHOPPER incorporates a prior ranking (based on sentence position in the case of summarization).
+The state of the art results for multi-document summarization are obtained using mixtures of submodular functions. These methods have achieved the state of the art results for Document Summarization Corpora, DUC 04 - 07.[23] Similar results were achieved with the use of determinantal point processes (which are a special case of submodular functions) for DUC-04.[24]
+A new method for multi-lingual multi-document summarization that avoids redundancy generates ideograms to represent the meaning of each sentence in each document, then evaluates similarity by comparing ideogram shape and position. It does not use word frequency, training or preprocessing. It uses two user-supplied parameters: equivalence (when are two sentences to be considered equivalent?) and relevance (how long is the desired summary?)'''
 
-# Call load_llm() to create an instance of the model
-# llm_model = load_llm()
+chunks = split_into_paragraphs(one_large_text)
 
-# Test if the model was loaded successfully
-# if llm_model is not None:
-#     print("Model loaded successfully.")
-# else:
-#     print("Failed to load the model.")
+def summarization_main(chunks):
+    system_message = "You are a pratical, fast and polite assistant."
+    
+    llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",
+            
+            local_files_only=True)
+    summarized_text = ""
 
-#test to see neu em load duoc model len khong
+    for chunk in chunks:
+        system_message = "<|im_start|>system\nYou are an efficient bot.\n<|im_end|>"
+        user_message = f"<|im_start|>user\n{chunk}\n<|im_end|>"
+
+        assistant_message = input(f"{system_message}\n{user_message}\n<|im_start|>assistant\n")
+
+        chat_prompt = llm(f"{system_message}\n{user_message}\n<|im_start|>assistant\n{assistant_message}\n")
+        txt_summarized = llm("summarize this as short as you can: "+ txt)
+
+        summarized_text = "\n".join(txt_summarized)
+
+    return summarized_text    
+
+# this will be the newest fix
+
+txt_summarized = summarization_main(chunks)
+print(txt_summarized)
+
 
 if __name__ == '__main__':
     # sua loi module chay luon ngay khi import o main
@@ -121,34 +62,3 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-
-
-# import logging
-# import re
-# from transformers import pipeline
-# from ctransformers import AutoModelForCausalLM
-
-# # Set gpu_layers to the number of layers to offload to GPU. Set to 0 if no GPU acceleration is available on your system.
-# #llm = AutoModelForCausalLM.from_pretrained("TheBloke/TinyLlama-1.1B-1T-OpenOrca-GGUF", model_file="tinyllama-1.1b-1t-openorca.Q4_K_M.gguf", model_type="llama", gpu_layers=50)
-# llm = AutoModelForCausalLM.from_pretrained("*/tinyllama-1.1b-1t-openorca.Q4_K_M.gguf")
-# print(llm("AI is going to"))
-# # testing for what is actually good with the model/ em tim hieu model hoat dong nhu nao
-
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger("summerizerfunction")
-
-# try:
-#     logger.info("Loading model...")
-#     summerizer = pipeline("summerization",model="sshleifer/distilbart-cnn-12-6")
-#     logger.info("Summerizer loaded successfully!")
-# except Exception as e:
-#     logger.error(f"Failed to load model: {e}")
-#     raise RuntimeError("summerizer model loader failed.") from e
-
-# from transformers import CTransformers
-# import ctransformers
-# from ctransformers import ctransformers
