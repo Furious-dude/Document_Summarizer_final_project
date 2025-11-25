@@ -208,8 +208,9 @@ class App(customtkinter.CTk):
             # if summary_cache:
             #     txt = summary_cache # lay text tu ben da lay sang cache, global  
             # else:
-            llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\Document_Summarizer_final_project\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-            txt_summarized = llm("summarize this as short as you can: "+ txt)# dang lam, buon ngu qua
+            required_lines = round(self.final_summed_lines.get()*10)
+            llm = AutoModelForCausalLM.from_pretrained(r"Document_Summarizer_final_project\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+            txt_summarized = llm("summarize this paragraph to {required_lines} sentence: "+ txt)# dang lam, buon ngu qua
             self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua xuong duoi txtbox nho
             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
         except Exception as e:
@@ -244,9 +245,12 @@ class App(customtkinter.CTk):
 
     def summarize_style_2(self):
         raw_text = self.textbox_raw.get("0.0",customtkinter.END)
-        summarized_text = sumy_summarizer(raw_text,self.final_summed_lines.get())
-        self.textbox_raw.delete("0.0",customtkinter.END)
-        self.textbox_summarized.insert("0.0",summarized_text)
+        self.textbox_summarized.insert(customtkinter.END,"text from summarization 2:")
+        numb_of_lines = round(self.final_summed_lines.get()*10) # because the slider is always point numbered
+        summarized_text = sumy_summarizer(raw_text,numb_of_lines)
+        # self.textbox_raw.delete("0.0",customtkinter.END)
+        self.textbox_summarized.insert(customtkinter.END,summarized_text)
+        self.textbox_summarized.insert(customtkinter.END,"\n")
     
     # change the GUI langue, from eng to vie
     def gui_language_setting(self):
