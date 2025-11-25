@@ -202,13 +202,13 @@ class App(customtkinter.CTk):
         try:
 
             txt = self.textbox_raw.get("0.0",customtkinter.END)
-            txt_chunks = split_into_sentences(self.textbox_raw.get("0.0",customtkinter.END))
+            # txt_chunks = split_into_sentences(self.textbox_raw.get("0.0",customtkinter.END))
             self.summarize_button.configure(state="disabled")
             # global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
             # if summary_cache:
             #     txt = summary_cache # lay text tu ben da lay sang cache, global  
             # else:
-            llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+            llm = AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\Document_Summarizer_final_project\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
             txt_summarized = llm("summarize this as short as you can: "+ txt)# dang lam, buon ngu qua
             self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua xuong duoi txtbox nho
             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
