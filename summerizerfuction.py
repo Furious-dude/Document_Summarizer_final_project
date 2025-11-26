@@ -45,11 +45,13 @@ chunks = split_into_paragraphs(one_large_text)
 
 def summarization_main(chunks):
     system_message = "You are a pratical, fast and polite assistant."
-    
+    config = ctransformers.AutoConfig.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf",local_files_only=True)
+    config.config.max_new_tokens = 2000 # fault: need to put these configs before, you could do it, but now you know it is possible
+    config.config.context_length = 4000 # without these configs, will get into out of token loop error
     llm = ctransformers.AutoModelForCausalLM.from_pretrained(r"D:\05_uni_things\DoAn_Document_summary\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",
             
-            local_files_only=True
-            
+            local_files_only=True,
+            config = config
             )
     summarized_text = ""
     model_is_fed = False
