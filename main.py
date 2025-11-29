@@ -2,13 +2,14 @@ import tkinter
 import tkinter.messagebox
 import customtkinter
 # from summerizerfuction import load_llm
-from ctransformers import AutoModelForCausalLM
+# from ctransformers import AutoModelForCausalLM
 import pypdf
 import threading
 import time
 from text_chunker import split_into_paragraphs
 from summary_shortening_module import sumy_summarizer
 from PIL import ImageTk
+import summerizerfuction
 
 #set defaults
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
@@ -24,14 +25,15 @@ class App(customtkinter.CTk):
         self.is_loading_pdf = False
         self.is_loading_model = False
         self.is_summarizing = False
-
+        # self.config(bg="#abc123")
+        # self.wm_attributes('-transparentcolor',"#abc123") # change to transparent color
     # configure window
         self.title("Document summerizer phase 2")
         self.geometry(f"{1100}x{580}")
 
-    # configure grid layout (4x4)
+    # configure grid layout (4x5)
         self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure((2, 3), weight=0)
+        self.grid_columnconfigure((2, 3, 4), weight=1)
         self.grid_rowconfigure((0, 1, 2), weight=1)
 
 
@@ -102,7 +104,7 @@ class App(customtkinter.CTk):
         
 
     # create scrollable frame
-        self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="CTkScrollableFrame")
+        self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="Options")
         self.scrollable_frame.grid(row=1, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.scrollable_frame.grid_columnconfigure(0, weight=1)
         self.scrollable_frame_switch_shorten = customtkinter.CTkSwitch(master=self.scrollable_frame, text=f"Shorten mode")
@@ -175,8 +177,8 @@ class App(customtkinter.CTk):
         print("sidebar_button click")
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
         print("Selected File:", file_path)
-        with open(file_path, 'r') as f:
-            self.textbox_raw.insert(END, f.read())
+        with open(file_path, 'r',encoding='utf-8-sig') as f:
+            self.textbox_raw.insert(customtkinter.END, f.read())
 
     def addtext(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("Text File", ('*.txt')),("PDF File", ('*.pdf')), ("All files", "*.*")])
@@ -198,20 +200,24 @@ class App(customtkinter.CTk):
         # self.textbox.delete(0,END) # deletes your textbox text
 
         
-    def text_summerize(self):
+    def text_summerize(self): # fixed it now, only pass to other module instead
         try:
-
+            
             txt = self.textbox_raw.get("0.0",customtkinter.END)
-            # txt_chunks = split_into_sentences(self.textbox_raw.get("0.0",customtkinter.END))
-            self.summarize_button.configure(state="disabled")
+            if txt != "":
+                txt_chunks = summerizerfuction.split_into_paragraphs(txt)
+                self.textbox_summarized.insert(customtkinter.END,txt_chunks) # hien thi ket qua sang txtbox summarized
+
+                self.summarize_button.configure(state="disabled")
             # global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
             # if summary_cache:
             #     txt = summary_cache # lay text tu ben da lay sang cache, global  
             # else:
-            required_lines = round(self.final_summed_lines.get()*10)
-            llm = AutoModelForCausalLM.from_pretrained(r"Document_Summarizer_final_project\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
-            txt_summarized = llm("summarize this paragraph to {required_lines} sentence: "+ txt)# dang lam, buon ngu qua
-            self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua xuong duoi txtbox nho
+                required_lines = round(self.final_summed_lines.get()*10)
+                txt_summarized = summerizerfuction.summarization_main(chunks=txt,num_of_sentences=required_lines)
+                self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua sang txtbox summarized
+                # llm = AutoModelForCausalLM.from_pretrained(r"Document_Summarizer_final_project\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
+                # txt_summarized = llm("summarize this paragraph to {required_lines} sentence: "+ txt)
             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
         except Exception as e:
             tkinter.messagebox.showerror("Error",f"{e}")
@@ -221,7 +227,7 @@ class App(customtkinter.CTk):
             # txt ket lai o vi tri processing, nhung co the minh se cho thread vao day luon
     
         # print(llm("Summarize this text : " + txt)) # khong can nua, day la de test
-        return llm
+        # return llm
     def open_pdf(self):
         file_path = tkinter.filedialog.askopenfilename(title="Select Document File", filetypes=[("PDF File", ('*.pdf')), ("All files", "*.*")])
         if file_path:
@@ -269,6 +275,8 @@ class App(customtkinter.CTk):
             self.pdf_file_button.configure(text="Open pdf file")
             self.txt_file_button.configure(text="Choose text file")
             self.shorten_button.configure(text="Summarize style 2")
+            self.scrollable_frame.configure(text="Options")
+
         elif state == "Tiếng Việt":
             print(" got Tiếng Việt")
             self.language_change_submit_button.configure(text="Ngôn ngữ")
@@ -282,6 +290,7 @@ class App(customtkinter.CTk):
             self.pdf_file_button.configure(text="Mở file PDF")
             self.txt_file_button.configure(text="Mở file Text")
             self.shorten_button.configure(text="Tóm tắt cách 2")
+            self.scrollable_frame.configure(text="Lựa chọn khác")
         else:
             print("loi")
 
