@@ -41,7 +41,7 @@ class App(customtkinter.CTk):
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="DocumentSummarizer2W", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
         self.txt_file_button = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
         self.txt_file_button.grid(row=1, column=0, padx=20, pady=10)
@@ -73,17 +73,17 @@ class App(customtkinter.CTk):
         
 
         
-    # create checkboxes
+    # border buttons
         self.checkbox_slider_frame = customtkinter.CTkFrame(self)
         self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.summarize_button = customtkinter.CTkButton(master=self.checkbox_slider_frame, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.summarize_button.grid(row=0, column=0, padx=(20, 20), pady=(20, 20), sticky="nsew") 
         self.shorten_button = customtkinter.CTkButton(master=self.checkbox_slider_frame, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.shorten_button.grid(row=1, column=0, padx=(20, 20), pady=(20, 20), sticky="nsew")         
-        self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_1.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_2.grid(row=3, column=0, pady=(20, 0), padx=20, sticky="n")
+        # self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
+        # self.checkbox_1.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
+        # self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
+        # self.checkbox_2.grid(row=3, column=0, pady=(20, 0), padx=20, sticky="n")
                 
 
     # textbox main section # indent de tao chapter, rut gon code
@@ -127,10 +127,10 @@ class App(customtkinter.CTk):
         self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
         self.final_summed_lines = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=10)
         self.final_summed_lines.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.final_text_line_label = customtkinter.CTkLabel(self.slider_progressbar_frame,text="final_text_line")
+        self.final_text_line_label = customtkinter.CTkLabel(self.slider_progressbar_frame,text="Number of summarized line")
         self.final_text_line_label.grid(row=4,column=0)
 
-        self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical")
+        self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical") # planned for the audio function, but not have time to implement
         self.slider_2.grid(row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns")
         self.progressbar_3 = customtkinter.CTkProgressBar(self.slider_progressbar_frame, orientation="vertical")
         self.progressbar_3.grid(row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns")
@@ -205,17 +205,20 @@ class App(customtkinter.CTk):
             
             txt = self.textbox_raw.get("0.0",customtkinter.END)
             if txt != "":
-                txt_chunks = summerizerfuction.split_into_paragraphs(txt)
-                self.textbox_summarized.insert(customtkinter.END,txt_chunks) # hien thi ket qua sang txtbox summarized
+                txt_num = len(txt)
+                if txt_num < 4000:
+                    txt_summarized = summerizerfuction.summarization_sub(text=txt)
+                    self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua sang txtbox summarized
 
-                self.summarize_button.configure(state="disabled")
-            # global summary_cache # lay cache o ngoai, vi python hoat dong khac so voi cac ngon ngu lap trinh khac
-            # if summary_cache:
-            #     txt = summary_cache # lay text tu ben da lay sang cache, global  
-            # else:
-                required_lines = round(self.final_summed_lines.get()*10)
-                txt_summarized = summerizerfuction.summarization_main(chunks=txt,num_of_sentences=required_lines)
-                self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua sang txtbox summarized
+                else:    
+                    txt_chunks = summerizerfuction.split_into_paragraphs(txt)
+                    self.textbox_summarized.insert(customtkinter.END,txt_chunks) # hien thi ket qua sang txtbox summarized
+
+                    self.summarize_button.configure(state="disabled")
+            
+                    required_lines = round(self.final_summed_lines.get()*10)
+                    txt_summarized = summerizerfuction.summarization_main(chunks=txt,num_of_sentences=required_lines)
+                    self.textbox_summarized.insert(customtkinter.END,txt_summarized) # hien thi ket qua sang txtbox summarized
                 # llm = AutoModelForCausalLM.from_pretrained(r"Document_Summarizer_final_project\tinyllama_model\tinyllama-1.1b-1t-openorca.Q2_K.gguf", model_type="llama",local_files_only=True)
                 # txt_summarized = llm("summarize this paragraph to {required_lines} sentence: "+ txt)
             # threading.Thread(target=text_summerize).start() # thread nhu nay se khong hoat dong duoc
@@ -268,7 +271,7 @@ class App(customtkinter.CTk):
             self.appearance_mode_label.configure(text="Appearance Mode:")
             self.scaling_label.configure(text="UI Scaling:")
             self.entry_label.configure(text="Raw text")
-            self.final_text_line_label.configure(text="Choose number of lines")
+            self.final_text_line_label.configure(text="Number of summarized line")
 
             self.sidebar_button_3.configure(text="Chunk text into paragraph")
             self.summarize_button.configure(text="Summarize")
